@@ -176,27 +176,31 @@ public class Player : MonoBehaviour {
 		if (checkPoint.y > transform.position.y) {
 			isFalling = true;
 			if (isLeftPressed) {
-				myrigitbody.velocity = new Vector2 (-5, -15);
+				myrigitbody.velocity = new Vector2 (-movementSpeed, -10);
+				myAnimator.SetFloat ("speed", 1);
 			}
 			if (isRightPressed) {
-				myrigitbody.velocity = new Vector2 (5, -15);
+				myrigitbody.velocity = new Vector2 (movementSpeed, -10);
+				myAnimator.SetFloat ("speed", 1);
 			}
-			myAnimator.SetFloat ("speed", 0);
 		} else {
 			isFalling = false;
+			if(isGrounded) {
+				//StopMoving ();
+			}
 		}
 	}
 
 	public void isMovingInAir() {
 		if (isLeftPressed) {
 			if (checkPoint.y < transform.position.y) {
-				myrigitbody.velocity = new Vector2 (-movementSpeed, -5);
+				//myrigitbody.velocity = new Vector2 (-movementSpeed, -5);
 				myAnimator.SetFloat ("speed", 1);
 			}
 		}
 		if (isRightPressed) {
 			if (checkPoint.y < transform.position.y) {
-				myrigitbody.velocity = new Vector2 (movementSpeed, -5);
+				//myrigitbody.velocity = new Vector2 (movementSpeed, -5);
 				myAnimator.SetFloat ("speed", 1);
 			}
 		}
