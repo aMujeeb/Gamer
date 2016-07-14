@@ -27,6 +27,9 @@ public class Player : MonoBehaviour {
 
 	private bool jump;
 
+	private Vector2 checkPoint;
+	private bool isFalling;
+
 	private bool isLeftPressed = false;
 	private bool isRightPressed = false;
 
@@ -39,6 +42,7 @@ public class Player : MonoBehaviour {
 	// Use this for initialization
 	void Start () {
 		facingRight = true;
+		isFalling = false;
 		myrigitbody = GetComponent<Rigidbody2D> ();
 		myAnimator = GetComponent<Animator>();
 	}
@@ -53,6 +57,7 @@ public class Player : MonoBehaviour {
 		if(isRightPressed && isGrounded) {
 			myrigitbody.velocity = new Vector2 (movementSpeed, 0);
 		}
+			
 	}
 
 	void Awake() {
@@ -62,6 +67,8 @@ public class Player : MonoBehaviour {
 		isGrounded = IsGrounded ();
 		handleMovement();
 		handleLayers ();
+		checkIsFalling ();
+		//isMovingInAir ();
 		//resetValues ();
 
 	}
@@ -130,25 +137,31 @@ public class Player : MonoBehaviour {
 
 	public void MoveLeft() {
 		//Debug.Log ("Player Speed Left:" + movementSpeed);
+		checkPoint = new Vector2 (transform.position.x, transform.position.y);
 		isLeftPressed = true;
 		flip (-1f);
 		myrigitbody.velocity = new Vector2 (-movementSpeed, 0);
 		myAnimator.SetFloat ("speed", 1);
+
 	}
 
 	public void MoveRight() {
+		checkPoint = new Vector2 (transform.position.x, transform.position.y);
 		isRightPressed = true;
 		flip (1f);
 		myrigitbody.velocity = new Vector2 (movementSpeed, 0);
 		myAnimator.SetFloat ("speed", 1);
+
 	}
 
 	public void StopMoving() {
 		//jump = false;
-		isLeftPressed = false;
-		isRightPressed = false;
-		myrigitbody.velocity = Vector2.zero;
-		myAnimator.SetFloat ("speed", 0);
+		//if (isFalling) {
+			isLeftPressed = false;
+			isRightPressed = false;
+			myrigitbody.velocity = Vector2.zero;
+			myAnimator.SetFloat ("speed", 0);
+		//}
 	}
 
 	public void JumpUp(){
@@ -159,4 +172,33 @@ public class Player : MonoBehaviour {
 		jump = false;
 	}
 
+	public void checkIsFalling() {
+		if (checkPoint.y > transform.position.y) {
+			isFalling = true;
+			if (isLeftPressed) {
+				myrigitbody.velocity = new Vector2 (-5, -15);
+			}
+			if (isRightPressed) {
+				myrigitbody.velocity = new Vector2 (5, -15);
+			}
+			myAnimator.SetFloat ("speed", 0);
+		} else {
+			isFalling = false;
+		}
+	}
+
+	public void isMovingInAir() {
+		if (isLeftPressed) {
+			if (checkPoint.y < transform.position.y) {
+				myrigitbody.velocity = new Vector2 (-movementSpeed, -5);
+				myAnimator.SetFloat ("speed", 1);
+			}
+		}
+		if (isRightPressed) {
+			if (checkPoint.y < transform.position.y) {
+				myrigitbody.velocity = new Vector2 (movementSpeed, -5);
+				myAnimator.SetFloat ("speed", 1);
+			}
+		}
+	}
 }
