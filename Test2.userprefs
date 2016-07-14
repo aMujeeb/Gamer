@@ -1,0 +1,17 @@
+﻿<Properties StartupItem="Assembly-CSharp.csproj">
+  <MonoDevelop.Ide.Workspace ActiveConfiguration="Debug" PreferredExecutionTarget="Unity.Instance.Unity Editor" />
+  <MonoDevelop.Ide.Workbench ActiveDocument="Assets/Player.cs">
+    <Files>
+      <File FileName="Assets/Mushroom.cs" Line="18" Column="6" />
+      <File FileName="Assets/Player.cs" Line="139" Column="37" />
+      <File FileName="Assets/scripts/ColiisionsTrigger.cs" Line="15" Column="3" />
+      <File FileName="Assets/GameMaster.cs" Line="19" Column="92" />
+      <File FileName="Assets/FallDetect.cs" Line="16" Column="6" />
+      <File FileName="Assets/scripts/CameraFollower.cs" Line="28" Column="141" />
+    </Files>
+  </MonoDevelop.Ide.Workbench>
+  <MonoDevelop.Ide.DebuggingService.Breakpoints>
+    <BreakpointStore />
+  </MonoDevelop.Ide.DebuggingService.Breakpoints>
+  <MonoDevelop.Ide.DebuggingService.PinnedWatches />
+</Properties>
