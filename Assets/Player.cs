@@ -3,16 +3,15 @@ using System.Collections;
 
 public class Player : MonoBehaviour {
 
-	private Rigidbody2D myrigitbody;
+	private Rigidbody2D playerRigidBody;
+	private float moveDirection;
 
-	private Rigidbody2D mobilerigitbody;
-	private Animator myAnimator;
-	private float horizontal;
+	private Animator playerAnimator;
 
 	[SerializeField]
 	private float movementSpeed;
 
-	private bool facingRight;
+	private bool turnRight;
 
 	[SerializeField]
 	private Transform[] groundPoints;
@@ -21,188 +20,79 @@ public class Player : MonoBehaviour {
 	private float groundRadius;
 
 	[SerializeField]
-	private LayerMask whatIsGround;
+	private LayerMask placedOnGround;
 
-	private bool isGrounded;
-
-	private bool jump;
-
-	private Vector2 checkPoint;
-	private bool isFalling;
-
-	private bool isLeftPressed = false;
-	private bool isRightPressed = false;
-
-	[SerializeField]
-	private bool airControl;
+	private bool isOnTheGround;
 
 	[SerializeField]
 	private float jumpForce;
 
-	// Use this for initialization
+	private bool jumping;
+
+	// Use this for initializatio
 	void Start () {
-		facingRight = true;
-		isFalling = false;
-		myrigitbody = GetComponent<Rigidbody2D> ();
-		myAnimator = GetComponent<Animator>();
+		playerRigidBody = GetComponent<Rigidbody2D> ();
+		playerAnimator = GetComponent<Animator> ();
+		turnRight = true;
 	}
 	
 	// Update is called once per frame
 	void Update () {
-		//float horizontal = Input.GetAxis ("Horizontal");
-		//handleMovement (horizontal);
-		if (isLeftPressed && isGrounded) {
-			myrigitbody.velocity = new Vector2 (-movementSpeed, 0);
+		moveDirection = Input.GetAxis ("Horizontal");
+	}
+
+	void FixedUpdate() {
+		isOnTheGround = IsGrounded ();
+		movePlayer (moveDirection);
+		turnPlayer (moveDirection);
+		HandleKeyInput ();
+	}
+		
+	public void movePlayer(float moveDirection) {
+		//Debug.Log ("Move Direction-"+jumping+"-"+isOnTheGround);
+		if (isOnTheGround && jumping) {
+			playerRigidBody.AddForce (new Vector2 (0, jumpForce));
+			playerAnimator.SetBool("jump",true);
+			jumping = false;
+			isOnTheGround = false;
+		} 
+
+		if (isOnTheGround) {
+			playerRigidBody.velocity = new Vector2 (moveDirection * movementSpeed, playerRigidBody.velocity.y);
+			playerAnimator.SetFloat ("speed", Mathf.Abs (moveDirection));
 		}
-		if(isRightPressed && isGrounded) {
-			myrigitbody.velocity = new Vector2 (movementSpeed, 0);
+	}
+
+	public void turnPlayer (float moveDirection) {
+		if (moveDirection > 0 && !turnRight || moveDirection < 0 && turnRight) {
+			turnRight = !turnRight;
+
+			Vector3 updatedScale = transform.localScale;
+			updatedScale.x *= -1;
+			transform.localScale = updatedScale;
 		}
-			
 	}
 
-	void Awake() {
-	}
-
-	void FixedUpdate () { //Regardslessly the frame rate of hardware this works
-		isGrounded = IsGrounded ();
-		handleMovement();
-		handleLayers ();
-		checkIsFalling ();
-		//isMovingInAir ();
-		//resetValues ();
-
-	}
-
-	private void handleInput(){
+	public void HandleKeyInput() {
 		if (Input.GetKeyDown (KeyCode.Space)) {
-			jump = true;
+			//Debug.Log ("Press Key Space");
+			jumping = true;
 		}
 	}
-
-	public void resetValues() {
-		jump = false;
-	}
-
-	private void handleMovement() {
-		if(isGrounded && jump){
-			isGrounded = false;
-			myrigitbody.AddForce (new Vector2(0,jumpForce));
-			myAnimator.SetTrigger ("jump");
-			jump = false;
-		}
-
-		if(myrigitbody.velocity.y < 0) {
-			myAnimator.SetBool ("land", true);
-
-		}
-	}
-
-	private void flip(float horizontal) {
-		if (horizontal > 0 && !facingRight || horizontal < 0 && facingRight) {
-			facingRight = !facingRight;
-
-			Vector3 theScale = transform.localScale;
-			theScale.x *= -1;
-			transform.localScale = theScale;
-		}
-	}
-
+		
 	private bool IsGrounded() {
-		if (myrigitbody.velocity.y <= 0) {
-			foreach (Transform point in groundPoints) {
-				Collider2D[] colliders = Physics2D.OverlapCircleAll (point.position, groundRadius, whatIsGround);
-			
-				for(int i = 0; i< colliders.Length; i++){
-					if (colliders [i].gameObject != gameObject) {
-						Debug.Log ("Ground Game Object:" +gameObject.tag);
-						myAnimator.ResetTrigger ("jump");
-						myAnimator.SetBool ("land", false);
+		if(playerRigidBody.velocity.y <= 0){
+			foreach(Transform tPoint in groundPoints){
+				Collider2D[] groundColliders = Physics2D.OverlapCircleAll (tPoint.position, groundRadius, placedOnGround);
+				for (int i = 0; i< groundColliders.Length ; i++){
+					if (groundColliders [i].gameObject != gameObject) { //groundCollider game object != Player game object
+						//Debug.Log ("Grounded");
+						playerAnimator.SetBool("jump",false);
 						return true;
 					}
 				}
 			}
-
 		}
 		return false;
-	}
-
-	private void handleLayers(){
-		if (!isGrounded) {
-			myAnimator.SetLayerWeight (1, 1);
-		} else {
-			myAnimator.SetLayerWeight (1, 0);
-		}
-	}
-
-
-	public void MoveLeft() {
-		//Debug.Log ("Player Speed Left:" + movementSpeed);
-		checkPoint = new Vector2 (transform.position.x, transform.position.y);
-		isLeftPressed = true;
-		flip (-1f);
-		myrigitbody.velocity = new Vector2 (-movementSpeed, 0);
-		myAnimator.SetFloat ("speed", 1);
-
-	}
-
-	public void MoveRight() {
-		checkPoint = new Vector2 (transform.position.x, transform.position.y);
-		isRightPressed = true;
-		flip (1f);
-		myrigitbody.velocity = new Vector2 (movementSpeed, 0);
-		myAnimator.SetFloat ("speed", 1);
-
-	}
-
-	public void StopMoving() {
-		//jump = false;
-		//if (isFalling) {
-			isLeftPressed = false;
-			isRightPressed = false;
-			myrigitbody.velocity = Vector2.zero;
-			myAnimator.SetFloat ("speed", 0);
-		//}
-	}
-
-	public void JumpUp(){
-		jump = true;
-	}
-
-	public void StopJumping() {
-		jump = false;
-	}
-
-	public void checkIsFalling() {
-		if (checkPoint.y > transform.position.y) {
-			isFalling = true;
-			if (isLeftPressed) {
-				myrigitbody.velocity = new Vector2 (-movementSpeed, -10);
-				myAnimator.SetFloat ("speed", 1);
-			}
-			if (isRightPressed) {
-				myrigitbody.velocity = new Vector2 (movementSpeed, -10);
-				myAnimator.SetFloat ("speed", 1);
-			}
-		} else {
-			isFalling = false;
-			if(isGrounded) {
-				//StopMoving ();
-			}
-		}
-	}
-
-	public void isMovingInAir() {
-		if (isLeftPressed) {
-			if (checkPoint.y < transform.position.y) {
-				//myrigitbody.velocity = new Vector2 (-movementSpeed, -5);
-				myAnimator.SetFloat ("speed", 1);
-			}
-		}
-		if (isRightPressed) {
-			if (checkPoint.y < transform.position.y) {
-				//myrigitbody.velocity = new Vector2 (movementSpeed, -5);
-				myAnimator.SetFloat ("speed", 1);
-			}
-		}
 	}
 }
